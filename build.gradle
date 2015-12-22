@@ -1,0 +1,22 @@
+apply plugin: 'java'
+apply plugin: 'application'
+
+
+mainClassName = 'github.frodeaa.bottle.App'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+jar {
+    baseName = 'bottle'
+    version =  '0.1.0'
+}
+
+dependencies {
+    compile 'com.bladejava:blade-core:1.5.0'
+    compile 'com.bladejava:blade-startup:1.0.1'
+}
