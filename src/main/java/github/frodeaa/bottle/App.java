@@ -1,14 +1,16 @@
 package github.frodeaa.bottle;
 
-import blade.kit.json.Json;
+import blade.kit.json.JSONKit;
 import com.blade.Blade;
 import com.blade.plugin.Plugin;
 import github.frodeaa.blade.sql2o.Db;
 import github.frodeaa.blade.sql2o.Sql2oPlugin;
 import org.sql2o.Connection;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import static java.util.Collections.singletonMap;
-import static blade.kit.json.Json.parse;
 
 
 public class App {
@@ -16,16 +18,36 @@ public class App {
     public static void main(String[] args) {
         Blade blade = Blade.me();
 
-        blade.get("/", (req, resp) -> {
-            resp.html("<h1>Hello Blade!</h1>");
+        blade.post("/bottles", (req, resp) -> {
+            Bottle.from(req.body().asString()).insertWith(blade.plugin(Db.class));
+            resp.status(201);
         });
 
-        blade.get("/health", (req, resp) -> {
-            Integer status = Integer.valueOf(500);
+        blade.get("/bottles/:id", (req, resp) -> {
+            Collection<Bottle> bottles = Collections.emptyList();
             try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
-                status = con.createQuery("select 200").executeAndFetch(Integer.class).get(0);
+                bottles = con.createQuery("select * from bottles where id = :id")
+                        .addParameter("id", req.paramAsInt("id")).executeAndFetch(Bottle.class);
             }
-            resp.json(parse(singletonMap("status", status)).toString());
+            if (bottles.isEmpty()) {
+                resp.notFound();
+            } else {
+                resp.json(Bottle.asJson(bottles));
+            }
+        });
+
+        blade.get("/bottles", (req, resp) -> {
+            try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
+                resp.json(Bottle.asJson(con.createQuery("select * from bottles").executeAndFetch(Bottle.class)));
+            }
+        });
+
+
+        blade.get("/health", (req, resp) -> {
+            try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
+                resp.json(JSONKit.toJSONString(singletonMap("status",
+                        con.createQuery("select 200").executeAndFetch(Integer.class).get(0))));
+            }
         });
 
         ((Plugin) blade.plugin(Sql2oPlugin.class)).run();
