@@ -3,6 +3,7 @@ package github.frodeaa.bottle;
 import blade.kit.json.JSONKit;
 import com.blade.Blade;
 import com.blade.plugin.Plugin;
+import github.frodeaa.blade.flywaydb.FlywaydbPlugin;
 import github.frodeaa.blade.sql2o.Db;
 import github.frodeaa.blade.sql2o.Sql2oPlugin;
 import org.sql2o.Connection;
@@ -16,6 +17,10 @@ import static java.util.Collections.singletonMap;
 public class App {
 
     public static void main(String[] args) {
+
+        System.setProperty("DATABASE_URL",
+                System.getProperty("DATABASE_URL", "postgresql://frode:@localhost:5432/bottle"));
+
         Blade blade = Blade.me();
 
         blade.post("/bottles", (req, resp) -> {
@@ -50,6 +55,7 @@ public class App {
             }
         });
 
+        ((Plugin) blade.plugin(FlywaydbPlugin.class)).run();
         ((Plugin) blade.plugin(Sql2oPlugin.class)).run();
         blade.start();
     }

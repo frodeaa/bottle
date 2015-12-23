@@ -14,7 +14,7 @@ public class Sql2oPlugin implements Plugin, Db {
     @Override
     public void run() {
         try {
-            dbUrl = new DbUrl(System.getProperty("DATABASE_URL", "postgresql://frode:@localhost:5432/bottle"));
+            dbUrl = new DbUrl(System.getProperty("DATABASE_URL"));
             sql2o = new Sql2o(dbUrl.getDataSource());
             LOGGER.info("sql2o initialized");
         } catch (Exception e) {
