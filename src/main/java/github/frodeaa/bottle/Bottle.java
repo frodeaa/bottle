@@ -7,6 +7,7 @@ import blade.kit.json.JsonValue;
 import github.frodeaa.blade.sql2o.Db;
 import org.sql2o.Connection;
 
+import java.sql.DriverManager;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -63,10 +64,10 @@ public class Bottle {
 
     }
 
-    public  void insertWith(Db db) {
+    public void insertWith(Db db) {
         try (Connection con = db.open()) {
-            con.createQuery("insert into bottles(title, url) values(:title, :url)")
-                    .bind(this).executeUpdate();
+            setId(con.createQuery("insert into bottles(title, url) values(:title, :url) returning id")
+                    .bind(this).executeAndFetch(Bottle.class).get(0).getId());
         }
     }
 
