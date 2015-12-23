@@ -7,7 +7,7 @@ import blade.kit.json.JsonValue;
 import github.frodeaa.blade.sql2o.Db;
 import org.sql2o.Connection;
 
-import java.sql.DriverManager;
+import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -16,6 +16,7 @@ public class Bottle {
     private Long id;
     private String title;
     private String url;
+    private Timestamp datetime_added;
 
     public Long getId() {
         return id;
@@ -41,11 +42,20 @@ public class Bottle {
         this.url = url;
     }
 
+    public Timestamp getDatetime_added() {
+        return datetime_added;
+    }
+
+    public void setDatetime_added(Timestamp datetime_added) {
+        this.datetime_added = datetime_added;
+    }
+
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
         o.add("id", getId());
         o.add("title", getTitle());
         o.add("url", getUrl());
+        o.add("datetime_added", getDatetime_added().toLocalDateTime().toString());
         return o;
 
     }
