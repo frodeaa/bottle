@@ -8,15 +8,16 @@ import org.sql2o.Sql2o;
 public class Sql2oPlugin implements Plugin, Db {
 
     private static Logger LOGGER = Logger.getLogger(Sql2oPlugin.class);
+    private DbUrl dbUrl;
     private Sql2o sql2o = null;
 
     @Override
     public void run() {
         try {
-            Class.forName("org.postgresql.Driver");
-            sql2o = new Sql2o("jdbc:postgresql://localhost:5432/bottle", "frode", "");
+            dbUrl = new DbUrl(System.getProperty("DATABASE_URL", "postgresql://frode:@localhost:5432/bottle"));
+            sql2o = new Sql2o(dbUrl.getDataSource());
             LOGGER.info("sql2o initialized");
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LOGGER.error("Failed to load sql2o", e);
         }
     }
