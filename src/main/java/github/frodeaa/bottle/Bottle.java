@@ -17,37 +17,22 @@ public class Bottle {
     private String title;
     private String url;
     private Timestamp datetime_added;
+    private Timestamp datetime_removed;
 
     public Long getId() {
         return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
     }
 
     public String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
     public String getUrl() {
         return url;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
     public Timestamp getDatetime_added() {
         return datetime_added;
-    }
-
-    public void setDatetime_added(Timestamp datetime_added) {
-        this.datetime_added = datetime_added;
     }
 
     public JsonObject toJson() {
@@ -68,15 +53,15 @@ public class Bottle {
             }
         }
         Bottle bottle = new Bottle();
-        bottle.setTitle(values.get("title").asString());
-        bottle.setUrl(values.get("url").asString());
+        bottle.title = values.get("title").asString();
+        bottle.url = values.get("url").asString();
         return bottle;
 
     }
 
     public void insertWith(Db db) {
         try (Connection con = db.open()) {
-            setId(con.createQuery("insert into bottles(title, url) values(:title, :url) returning id")
+            this.id = (con.createQuery("insert into bottles(title, url) values(:title, :url) returning id")
                     .bind(this).executeAndFetch(Bottle.class).get(0).getId());
         }
     }

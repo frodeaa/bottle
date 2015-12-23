@@ -31,7 +31,7 @@ public class App {
         blade.get("/bottles/:id", (req, resp) -> {
             Collection<Bottle> bottles = Collections.emptyList();
             try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
-                bottles = con.createQuery("select * from bottles where id = :id")
+                bottles = con.createQuery("select * from bottles where id = :id and datetime_removed is null")
                         .addParameter("id", req.paramAsInt("id")).executeAndFetch(Bottle.class);
             }
             if (bottles.isEmpty()) {
@@ -41,9 +41,24 @@ public class App {
             }
         });
 
+        blade.delete("/bottles/:id", (req, resp) -> {
+            Collection<Bottle> bottles = Collections.emptyList();
+            try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
+                bottles = con.createQuery("update bottles set datetime_removed = now() " +
+                        "where id = :id and datetime_removed is null returning *")
+                        .addParameter("id", req.paramAsInt("id")).executeAndFetch(Bottle.class);
+            }
+            if (bottles.isEmpty()) {
+                resp.notFound();
+            } else {
+                resp.status(204);
+            }
+        });
+
         blade.get("/bottles", (req, resp) -> {
             try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
-                resp.json(Bottle.asJson(con.createQuery("select * from bottles").executeAndFetch(Bottle.class)));
+                resp.json(Bottle.asJson(con.createQuery("select * from bottles " +
+                        "where datetime_removed is null").executeAndFetch(Bottle.class)));
             }
         });
 
