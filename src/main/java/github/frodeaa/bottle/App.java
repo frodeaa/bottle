@@ -11,7 +11,6 @@ import org.sql2o.Connection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
-import java.util.Collections;
 
 import static java.util.Collections.singletonMap;
 
@@ -56,11 +55,7 @@ public class App {
         });
 
         blade.get("/bottles/:id", (req, resp) -> {
-            Collection<Bottle> bottles = Collections.emptyList();
-            try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
-                bottles = con.createQuery("select * from bottles where id = :id and datetime_removed is null")
-                        .addParameter("id", req.paramAsInt("id")).executeAndFetch(Bottle.class);
-            }
+            Collection<Bottle> bottles = Bottle.byId(req.paramAsLong("id"), blade.plugin(Db.class));
             if (bottles.isEmpty()) {
                 resp.notFound();
             } else {
@@ -69,26 +64,16 @@ public class App {
         });
 
         blade.delete("/bottles/:id", (req, resp) -> {
-            Collection<Bottle> bottles = Collections.emptyList();
-            try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
-                bottles = con.createQuery("update bottles set datetime_removed = now() " +
-                        "where id = :id and datetime_removed is null returning *")
-                        .addParameter("id", req.paramAsInt("id")).executeAndFetch(Bottle.class);
-            }
-            if (bottles.isEmpty()) {
-                resp.notFound();
-            } else {
+            if (Bottle.deleteById(req.paramAsLong("id"), blade.plugin(Db.class))) {
                 resp.status(204);
+            } else {
+                resp.notFound();
             }
         });
 
         blade.get("/bottles", (req, resp) -> {
-            try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
-                resp.json(Bottle.asJson(con.createQuery("select * from bottles " +
-                        "where datetime_removed is null").executeAndFetch(Bottle.class)));
-            }
+            resp.json(Bottle.asJson(Bottle.list(blade.plugin(Db.class))));
         });
-
 
         blade.get("/health", (req, resp) -> {
             try (Connection con = ((Db) blade.plugin(Db.class)).open()) {

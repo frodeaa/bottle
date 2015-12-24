@@ -10,6 +10,7 @@ import org.sql2o.Connection;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class Bottle {
@@ -63,6 +64,29 @@ public class Bottle {
         try (Connection con = db.open()) {
             this.id = (con.createQuery("insert into bottles(title, url) values(:title, :url) returning id")
                     .bind(this).executeAndFetch(Bottle.class).get(0).getId());
+        }
+    }
+
+    public static boolean deleteById(Long id, Db db) {
+        try (Connection con = db.open()) {
+            return !con.createQuery("update bottles set datetime_removed = now() " +
+                    "where id = :id and datetime_removed is null returning *")
+                    .addParameter("id", id).executeAndFetch(Bottle.class).isEmpty();
+        }
+    }
+
+    public static List<Bottle> byId(Long id, Db db) {
+        try (Connection con = db.open()) {
+            return con.createQuery("select * from bottles where id = :id and datetime_removed is null")
+                    .addParameter("id", id).executeAndFetch(Bottle.class);
+        }
+
+    }
+
+    public static List<Bottle> list(Db db) {
+        try (Connection con = db.open()) {
+            return con.createQuery("select * from bottles " +
+                    "where datetime_removed is null").executeAndFetch(Bottle.class);
         }
     }
 
