@@ -8,6 +8,8 @@ import github.frodeaa.blade.sql2o.Db;
 import github.frodeaa.blade.sql2o.Sql2oPlugin;
 import org.sql2o.Connection;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -16,10 +18,35 @@ import static java.util.Collections.singletonMap;
 
 public class App {
 
-    public static void main(String[] args) {
+    private static String env(String key) {
+        String value = System.getenv(key);
+        return value == null ? "" : value;
+    }
 
-        System.setProperty("DATABASE_URL",
-                System.getProperty("DATABASE_URL", "postgresql://frode:@localhost:5432/bottle"));
+    private static String env(String key, String defaultValue) {
+        String value = System.getenv(key);
+        return value == null ? defaultValue : value;
+    }
+
+    private static String loadDbUrl() throws URISyntaxException {
+        String dbUrl = env("DATABASE_URL");
+        if (dbUrl.isEmpty()) {
+            if (!env("POSTGRES_PORT").isEmpty()) {
+                URI dbUri = new URI(env("POSTGRES_PORT"));
+                String dbAuth = String.format("%s:%s", env("POSTGRES_USER"), env("POSTGRES_PASSWORD"));
+                dbUrl = String.format("postgresql://%s@%s:%s/%s",
+                        dbAuth, dbUri.getHost(), dbUri.getPort(), env("POSTGRES_DATABASE", "bottle"));
+            } else {
+                dbUrl = "postgresql://bottle:bottle@localhost:5432/bottle";
+            }
+        }
+        System.out.println(dbUrl);
+        return dbUrl;
+    }
+
+    public static void main(String[] args) throws URISyntaxException {
+
+        System.setProperty("DATABASE_URL", loadDbUrl());
 
         Blade blade = Blade.me();
 
