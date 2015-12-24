@@ -1,4 +1,4 @@
-package github.frodeaa.blade.sql2o;
+package github.frodeaa.blade;
 
 import org.sql2o.GenericDatasource;
 

@@ -2,7 +2,7 @@ package github.frodeaa.blade.flywaydb;
 
 import blade.kit.log.Logger;
 import com.blade.plugin.Plugin;
-import github.frodeaa.blade.sql2o.DbUrl;
+import github.frodeaa.blade.DbUrl;
 import org.flywaydb.core.Flyway;
 
 import java.net.URISyntaxException;

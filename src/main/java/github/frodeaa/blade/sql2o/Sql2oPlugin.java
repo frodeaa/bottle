@@ -2,6 +2,7 @@ package github.frodeaa.blade.sql2o;
 
 import blade.kit.log.Logger;
 import com.blade.plugin.Plugin;
+import github.frodeaa.blade.DbUrl;
 import org.sql2o.Connection;
 import org.sql2o.Sql2o;
 
