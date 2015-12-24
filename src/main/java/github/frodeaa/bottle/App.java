@@ -48,10 +48,8 @@ public class App {
         });
 
         blade.get("/health", (req, resp) -> {
-            try (Connection con = ((Db) blade.plugin(Db.class)).open()) {
-                resp.json(JSONKit.toJSONString(singletonMap("status",
-                        con.createQuery("select 200").executeAndFetch(Integer.class).get(0))));
-            }
+            int status = ((Db) blade.plugin(Db.class)).healthCheck(200);
+            resp.status(status).json(JSONKit.toJSONString(singletonMap("status", status)));
         });
 
         ((Plugin) blade.plugin(FlywaydbPlugin.class)).run();

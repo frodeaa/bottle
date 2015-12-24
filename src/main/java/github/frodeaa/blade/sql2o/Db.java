@@ -7,4 +7,6 @@ public interface Db extends Plugin {
 
     public Connection open();
 
+    public int healthCheck(int status);
+
 }

@@ -31,4 +31,11 @@ public class Sql2oPlugin implements Plugin, Db {
     public Connection open() {
         return sql2o.open();
     }
+
+    public int healthCheck(int status) {
+        try (Connection con = open()) {
+            return con.createQuery("select :status")
+                    .addParameter("status", status).executeAndFetch(Integer.class).get(0);
+        }
+    }
 }
