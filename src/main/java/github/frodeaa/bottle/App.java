@@ -9,6 +9,7 @@ import github.frodeaa.blade.sql2o.Sql2oPlugin;
 
 import java.net.URISyntaxException;
 import java.util.Collection;
+import java.util.UUID;
 
 import static java.util.Collections.singletonMap;
 
@@ -27,7 +28,15 @@ public class App {
         });
 
         blade.get("/bottles/:id", (req, resp) -> {
-            Collection<Bottle> bottles = Bottle.byId(req.paramAsLong("id"), blade.plugin(Db.class));
+            UUID externalId;
+            try {
+                externalId = UUID.fromString(req.param("id"));
+            } catch (IllegalArgumentException e) {
+                resp.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+                return;
+            }
+
+            Collection<Bottle> bottles = Bottle.byId(externalId, blade.plugin(Db.class));
             if (bottles.isEmpty()) {
                 resp.notFound();
             } else {
@@ -36,7 +45,14 @@ public class App {
         });
 
         blade.delete("/bottles/:id", (req, resp) -> {
-            if (Bottle.deleteById(req.paramAsLong("id"), blade.plugin(Db.class))) {
+            UUID externalId;
+            try {
+                externalId = UUID.fromString(req.param("id"));
+            } catch (IllegalArgumentException e) {
+                resp.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+                return;
+            }
+            if (Bottle.deleteById(externalId, blade.plugin(Db.class))) {
                 resp.status(204);
             } else {
                 resp.notFound();
@@ -54,6 +70,7 @@ public class App {
 
         ((Plugin) blade.plugin(FlywaydbPlugin.class)).run();
         ((Plugin) blade.plugin(Sql2oPlugin.class)).run();
+
         blade.start();
     }
 }

@@ -8,13 +8,11 @@ import github.frodeaa.blade.sql2o.Db;
 import org.sql2o.Connection;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Bottle {
     private Long id;
+    private UUID external_id;
     private String title;
     private String url;
     private Timestamp datetime_added;
@@ -36,9 +34,13 @@ public class Bottle {
         return datetime_added;
     }
 
+    public UUID getExternal_id() {
+        return external_id;
+    }
+
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
-        o.add("id", getId());
+        o.add("id", getExternal_id().toString());
         o.add("title", getTitle());
         o.add("url", getUrl());
         o.add("datetime_added", getDatetime_added().toLocalDateTime().toString());
@@ -67,18 +69,19 @@ public class Bottle {
         }
     }
 
-    public static boolean deleteById(Long id, Db db) {
+    public static boolean deleteById(UUID externalId, Db db) {
         try (Connection con = db.open()) {
             return !con.createQuery("update bottles set datetime_removed = now() " +
-                    "where id = :id and datetime_removed is null returning *")
-                    .addParameter("id", id).executeAndFetch(Bottle.class).isEmpty();
+                    "where external_id = :external_id and datetime_removed is null returning *")
+                    .addParameter("external_id", externalId).executeAndFetch(Bottle.class).isEmpty();
         }
     }
 
-    public static List<Bottle> byId(Long id, Db db) {
+    public static List<Bottle> byId(UUID externalId, Db db) {
         try (Connection con = db.open()) {
-            return con.createQuery("select * from bottles where id = :id and datetime_removed is null")
-                    .addParameter("id", id).executeAndFetch(Bottle.class);
+            return con.createQuery("select * from bottles " +
+                    "where external_id = :external_id and datetime_removed is null")
+                    .addParameter("external_id", externalId).executeAndFetch(Bottle.class);
         }
 
     }
