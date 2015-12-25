@@ -52,6 +52,15 @@ public class App {
             }
         });
 
+        blade.delete("/bottles", (request, response) -> {
+            Collection<Bottle> removedBottles = Bottle.deleteAll(request.attribute("user"), blade.plugin(Db.class));
+            if (removedBottles.isEmpty()) {
+                response.status(204);
+            } else {
+                response.status(200).json(Bottle.asJson(removedBottles).toString());
+            }
+        });
+
         blade.delete("/bottles/:id", (req, resp) -> {
             UUID externalId;
             try {

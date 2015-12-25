@@ -98,6 +98,14 @@ public class Bottle {
         }
     }
 
+    public static List<Bottle> deleteAll(User user, Db db) {
+        try (Connection con = db.open()) {
+            return con.createQuery("update bottles set datetime_removed = now() " +
+                    "where datetime_removed is null and user_id = :user_id returning *")
+                    .addParameter("user_id", user.getId()).executeAndFetch(Bottle.class);
+        }
+    }
+
     public static List<Bottle> byId(User user, UUID externalId, Db db) {
         try (Connection con = db.open()) {
             return con.createQuery("select * from bottles " +
