@@ -45,17 +45,19 @@ public class AuthHandler implements RouteHandler {
                     return;
                 }
                 if (users.size() == 1 && users.get(0).checkPassword(userPass[1])) {
-                    LOGGER.info("authenticated " + users.get(0).getExternal_id() + ", " + ip);
+                    LOGGER.info(String.format("Request : %s\t%s\tauthenticated %s\t%s",
+                            request.method(), request.path(), users.get(0).getExternal_id(), ip));
                     request.attribute("user", users.get(0));
                     return;
                 }
             }
-            LOGGER.info("authentication failed " + ip);
+            LOGGER.info(String.format("Request : %s\t%s\tauthenticated failed %s\t%s",
+                    request.method(), request.path(), "", ip));
             response.header("Access-Control-Allow-Origin", "*");
             response.status(403).json(JSONKit.toJSONString(singletonMap("status_code", 403)));
         } else {
             response.header("WWW-Authenticate", "Basic realm=Bottle API");
-            response.status(401).json(JSONKit.toJSONString(singletonMap("status_code", 401)));
+            response.status(401).json(JSONKit.toJSONString(singletonMap("status_code", 401))).raw();
         }
     }
 

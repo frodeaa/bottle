@@ -5,6 +5,7 @@ import blade.kit.json.ParseException;
 import com.blade.Blade;
 import com.blade.plugin.Plugin;
 import github.frodeaa.blade.flywaydb.FlywaydbPlugin;
+import github.frodeaa.blade.perf.PerfPlugin;
 import github.frodeaa.blade.sql2o.Db;
 import github.frodeaa.blade.sql2o.Sql2oPlugin;
 
@@ -49,14 +50,8 @@ public class App {
         });
 
         blade.get("/bottles/:id", (request, response) -> {
-            UUID externalId;
             try {
-                externalId = UUID.fromString(request.param("id"));
-            } catch (IllegalArgumentException e) {
-                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
-                return;
-            }
-            try {
+                UUID externalId = UUID.fromString(request.param("id"));
                 Collection<Bottle> bottles = Bottle.byId(request.attribute("user"), externalId, blade.plugin(Db.class));
                 if (bottles.isEmpty()) {
                     response.notFound();
@@ -135,6 +130,7 @@ public class App {
 
         ((Plugin) blade.plugin(FlywaydbPlugin.class)).run();
         ((Plugin) blade.plugin(Sql2oPlugin.class)).run();
+        ((Plugin) blade.plugin(PerfPlugin.class)).run();
 
         blade.start();
     }
