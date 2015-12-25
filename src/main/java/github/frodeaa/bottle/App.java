@@ -31,7 +31,7 @@ public class App {
         });
 
         blade.post("/bottles", (req, resp) -> {
-            Bottle.from(req.body().asString()).insertWith(blade.plugin(Db.class));
+            Bottle.from(req.attribute("user"), req.body().asString()).insertWith(blade.plugin(Db.class));
             resp.status(201);
         });
 
@@ -44,7 +44,7 @@ public class App {
                 return;
             }
 
-            Collection<Bottle> bottles = Bottle.byId(externalId, blade.plugin(Db.class));
+            Collection<Bottle> bottles = Bottle.byId(req.attribute("user"), externalId, blade.plugin(Db.class));
             if (bottles.isEmpty()) {
                 resp.notFound();
             } else {
@@ -60,7 +60,7 @@ public class App {
                 resp.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
                 return;
             }
-            if (Bottle.deleteById(externalId, blade.plugin(Db.class))) {
+            if (Bottle.deleteById(req.attribute("user"), externalId, blade.plugin(Db.class))) {
                 resp.status(204);
             } else {
                 resp.notFound();
@@ -68,7 +68,7 @@ public class App {
         });
 
         blade.get("/bottles", (req, resp) -> {
-            resp.json(Bottle.asJson(Bottle.list(blade.plugin(Db.class))));
+            resp.json(Bottle.asJson(Bottle.list(req.attribute("user"), blade.plugin(Db.class))));
         });
 
         blade.get("/health", (req, resp) -> {

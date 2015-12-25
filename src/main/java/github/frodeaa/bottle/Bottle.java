@@ -56,7 +56,7 @@ public class Bottle {
         return o;
     }
 
-    public static Bottle from(String json) {
+    public static Bottle from(User user, String json) {
         Map<String, JsonValue> values = JSONKit.toMap(json);
         for (String required : Arrays.asList("title", "url")) {
             if (!values.containsKey(required) || values.get(required) == null || values.get(required).asString().equals("")) {
@@ -66,6 +66,7 @@ public class Bottle {
         Bottle bottle = new Bottle();
         bottle.title = values.get("title").asString();
         bottle.url = values.get("url").asString();
+        bottle.user_id = user.getId();
         return bottle;
 
     }
@@ -77,36 +78,40 @@ public class Bottle {
         this.url = bottle.url;
         this.datetime_added = bottle.datetime_added;
         this.datetime_removed = bottle.datetime_removed;
+        this.user_id = bottle.user_id;
     }
 
     public void insertWith(Db db) {
         try (Connection con = db.open()) {
-            updateWith(con.createQuery("insert into bottles(title, url) values(:title, :url) returning id")
+            updateWith(con.createQuery("insert into bottles(title, url, user_id) values(:title, :url, :user_id) returning id")
                     .bind(this).executeAndFetch(Bottle.class).get(0));
         }
     }
 
-    public static boolean deleteById(UUID externalId, Db db) {
+    public static boolean deleteById(User user, UUID externalId, Db db) {
         try (Connection con = db.open()) {
             return !con.createQuery("update bottles set datetime_removed = now() " +
-                    "where external_id = :external_id and datetime_removed is null returning *")
-                    .addParameter("external_id", externalId).executeAndFetch(Bottle.class).isEmpty();
+                    "where external_id = :external_id and datetime_removed is null and user_id = :user_id returning *")
+                    .addParameter("external_id", externalId)
+                    .addParameter("user_id", user.getId()).executeAndFetch(Bottle.class).isEmpty();
         }
     }
 
-    public static List<Bottle> byId(UUID externalId, Db db) {
+    public static List<Bottle> byId(User user, UUID externalId, Db db) {
         try (Connection con = db.open()) {
             return con.createQuery("select * from bottles " +
-                    "where external_id = :external_id and datetime_removed is null")
-                    .addParameter("external_id", externalId).executeAndFetch(Bottle.class);
+                    "where external_id = :external_id and datetime_removed is null and user_id = :user_id")
+                    .addParameter("external_id", externalId)
+                    .addParameter("user_id", user.getId()).executeAndFetch(Bottle.class);
         }
 
     }
 
-    public static List<Bottle> list(Db db) {
+    public static List<Bottle> list(User user, Db db) {
         try (Connection con = db.open()) {
             return con.createQuery("select * from bottles " +
-                    "where datetime_removed is null").executeAndFetch(Bottle.class);
+                    "where datetime_removed is null and user_id = :user_id")
+                    .addParameter("user_id", user.getId()).executeAndFetch(Bottle.class);
         }
     }
 

@@ -78,6 +78,11 @@ public class User {
         return user;
     }
 
+    public boolean checkPassword(String password) {
+        return BCrypt.checkpw(
+                String.format("%s:%s", getExternal_id(), password), getPassword());
+    }
+
     public static List<User> byId(UUID externalId, Db db) {
         try (Connection con = db.open()) {
             return con.createQuery("select * from users " +

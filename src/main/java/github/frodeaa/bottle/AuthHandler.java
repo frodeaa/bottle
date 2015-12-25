@@ -7,7 +7,6 @@ import com.blade.route.RouteHandler;
 import com.blade.web.http.Request;
 import com.blade.web.http.Response;
 import github.frodeaa.blade.sql2o.Db;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Base64;
 import java.util.List;
@@ -19,11 +18,22 @@ public class AuthHandler implements RouteHandler {
 
     private Logger LOGGER = Logger.getLogger(AuthHandler.class);
 
+    private String ip(Request requeset) {
+        String forwardedFor = requeset.header("X-Forwarded-For");
+        if (forwardedFor != null) {
+            return forwardedFor.split(" ")[0];
+        }
+        return requeset.raw().getRemoteAddr();
+    }
+
     @Override
     public void handle(Request request, Response response) {
         String authHeader = request.header("Authorization");
+
+        String ip = ip(request);
         if (authHeader != null) {
             String[] auth = authHeader.split(" ");
+
             if (auth.length == 2 && "Basic".equals(auth[0])) {
                 String[] userPass = new String(Base64.getDecoder().decode(auth[1])).split(":");
                 List<User> users;
@@ -34,12 +44,13 @@ public class AuthHandler implements RouteHandler {
                     response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
                     return;
                 }
-                if (users.size() == 1 && BCrypt.checkpw(
-                        String.format("%s:%s", userPass[0], userPass[1]), users.get(0).getPassword())) {
-                    LOGGER.info("authenticated " + users.get(0).toJson());
+                if (users.size() == 1 && users.get(0).checkPassword(userPass[1])) {
+                    LOGGER.info("authenticated " + users.get(0).getExternal_id() + ", " + ip);
+                    request.attribute("user", users.get(0));
                     return;
                 }
             }
+            LOGGER.info("authentication failed " + ip);
             response.header("Access-Control-Allow-Origin", "*");
             response.status(403);
             response.json(JSONKit.toJSONString(singletonMap("status_code", 403)));
