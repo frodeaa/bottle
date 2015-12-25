@@ -4,6 +4,7 @@
   "manifest_version": 2,
   "description": "Bottle links to read later.",
   "browser_action": {
+    "default_icon": "bottle.png",
     "default_popup": "popup.html"
   },
   "permissions": [
