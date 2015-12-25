@@ -12,6 +12,7 @@ import java.util.*;
 
 public class Bottle {
     private Long id;
+    private Long user_id;
     private UUID external_id;
     private String title;
     private String url;
@@ -40,6 +41,10 @@ public class Bottle {
 
     public Timestamp getDatetime_removed() {
         return datetime_removed;
+    }
+
+    public Long getUser_id() {
+        return user_id;
     }
 
     public JsonObject toJson() {

@@ -9,6 +9,7 @@ import org.sql2o.Connection;
 
 import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -75,6 +76,14 @@ public class User {
         user.password = BCrypt.hashpw(String.format("%s:%s", user.external_id, values.get("password").asString()),
                 BCrypt.gensalt(12));
         return user;
+    }
+
+    public static List<User> byId(UUID externalId, Db db) {
+        try (Connection con = db.open()) {
+            return con.createQuery("select * from users " +
+                    "where external_id = :external_id and datetime_disabled is null")
+                    .addParameter("external_id", externalId).executeAndFetch(User.class);
+        }
     }
 
 }

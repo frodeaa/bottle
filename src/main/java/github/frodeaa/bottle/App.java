@@ -22,6 +22,8 @@ public class App {
 
         Blade blade = Blade.me();
 
+        blade.before("/bottles.*", new AuthHandler());
+
         blade.post("/users", (request, response) -> {
             User user = User.fromRequest(request.body().asString());
             user.insertWith(blade.plugin(Db.class));

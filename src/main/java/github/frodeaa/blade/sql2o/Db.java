@@ -5,8 +5,8 @@ import org.sql2o.Connection;
 
 public interface Db extends Plugin {
 
-    public Connection open();
+    Connection open();
 
-    public int healthCheck(int status);
+    int healthCheck(int status);
 
 }
