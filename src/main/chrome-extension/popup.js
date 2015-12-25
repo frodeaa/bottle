@@ -3,7 +3,9 @@
     var serverURI = 'http://localhost:9000',
         config = null,
         count = 0,
-        links = document.getElementById("links");
+        links = document.getElementById("links"),
+        addBtn = document.getElementById("addBtn"),
+        msg = document.getElementById("message");;
 
     var doXhr = function(method, path, auth, data, callback) {
         var req = new window.XMLHttpRequest();
@@ -29,7 +31,7 @@
     var newUser = function(callback) {
         console.log("create new user");
         var userData = {password: Math.random().toString(36)};
-        doXhr("POST", "/users", null, userData, function(err, data) {
+        doXhr("POST", "/users", false, userData, function(err, data) {
             if (!err) {
                 data.password = userData.password;
                 callback(null, config);
@@ -38,6 +40,22 @@
             }
         });
     };
+
+    var newBottle = function(bottle, callback) {
+        console.log("create new bottle", bottle);
+        doXhr("POST", "/bottles", true, bottle, function(err, data) {
+            if (!err) {
+                callback(data);
+            }
+        });
+    }
+
+    var message = function(messageStr) {
+        msg.innerText = messageStr;
+        setTimeout(function() {
+            msg.innerText = "Total Links:"+count;
+        }, 1000);
+    }
 
     var badgeText = function(c){
         if(c > 999){
@@ -102,5 +120,18 @@
             console.log("use existing config");
             getBottles(listBottles);
         }
+    });
+
+    addBtn.addEventListener("click", function(){
+        chrome.tabs.getSelected(null, function(tab){
+            newBottle({"title": tab.title, "url": tab.url}, function(bottle) {
+                var list = document.createElement("li");
+                list.innerHTML = createLinkHtml(bottle);
+                links.appendChild(list);
+                message("Saved!");
+                count++;
+                chrome.browserAction.setBadgeText({"text": badgeText(count)});
+            });
+        });
     });
 })();
