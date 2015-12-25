@@ -22,6 +22,10 @@ public class Bottle {
         return id;
     }
 
+    public UUID getExternal_id() {
+        return external_id;
+    }
+
     public String getTitle() {
         return title;
     }
@@ -34,8 +38,8 @@ public class Bottle {
         return datetime_added;
     }
 
-    public UUID getExternal_id() {
-        return external_id;
+    public Timestamp getDatetime_removed() {
+        return datetime_removed;
     }
 
     public JsonObject toJson() {
@@ -45,7 +49,6 @@ public class Bottle {
         o.add("url", getUrl());
         o.add("datetime_added", getDatetime_added().toLocalDateTime().toString());
         return o;
-
     }
 
     public static Bottle from(String json) {
@@ -62,10 +65,19 @@ public class Bottle {
 
     }
 
+    private void updateWith(Bottle bottle) {
+        this.id = bottle.id;
+        this.external_id = bottle.external_id;
+        this.title = bottle.title;
+        this.url = bottle.url;
+        this.datetime_added = bottle.datetime_added;
+        this.datetime_removed = bottle.datetime_removed;
+    }
+
     public void insertWith(Db db) {
         try (Connection con = db.open()) {
-            this.id = (con.createQuery("insert into bottles(title, url) values(:title, :url) returning id")
-                    .bind(this).executeAndFetch(Bottle.class).get(0).getId());
+            updateWith(con.createQuery("insert into bottles(title, url) values(:title, :url) returning id")
+                    .bind(this).executeAndFetch(Bottle.class).get(0));
         }
     }
 

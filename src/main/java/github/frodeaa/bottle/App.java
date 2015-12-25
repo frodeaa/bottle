@@ -22,6 +22,12 @@ public class App {
 
         Blade blade = Blade.me();
 
+        blade.post("/users", (request, response) -> {
+            User user = User.fromRequest(request.body().asString());
+            user.insertWith(blade.plugin(Db.class));
+            response.status(201).json(user.toJson().toString());
+        });
+
         blade.post("/bottles", (req, resp) -> {
             Bottle.from(req.body().asString()).insertWith(blade.plugin(Db.class));
             resp.status(201);
