@@ -1,0 +1,108 @@
+body {
+    font-family: sans-serif;
+    width: 322px;
+}
+#header h1{
+    color: #555;
+    font-size: 32px;
+    text-transform: uppercase;
+    padding: 0;
+    margin: 0;
+    display: block;
+}
+#header span {
+    color: #AAA;
+    font-size: 16px;
+    vertical-align: middle;
+    padding: 0;
+    padding-top: 17px;
+    padding-left: 5px;
+    padding-right: 5px;
+    margin: 0;
+    display: block;
+}
+#links-wrap{
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    font-size: 12px;
+    word-wrap: break-word;
+    padding: 5px;
+    float: left;
+    clear: left;
+}
+
+#links{
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    float: left;
+    display: block;
+}
+#links li {
+    width: 100%;
+    -webkit-box-sizing: border-box;
+    display: block;
+    float: left;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+.removeBtn:before{
+        content:'x';
+}
+.removeBtn{
+    height: 15px;
+    width: 15px;
+    float: right;
+    background-color: #BA0713;
+    color: #FFF;
+    margin-right: 0px;
+    font-weight: bolder;
+    padding: 0;
+    border-radius: 10px;
+    text-align: center;
+    content: '&#215;';
+    cursor: pointer;
+}
+
+#container {
+    float: left;
+    width: 100%;
+}
+#addBtn{
+    float: right;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin: 12px 6px;
+    cursor: pointer;
+}
+#addBtn:hover, #clearBtn:hover {
+    color: #259DFF;
+    text-decoration: underline;
+}
+#clearBtn{
+    float: right;
+    text-transform: uppercase;
+    font-size: 12px;
+    margin: 12px 6px;
+    cursor: pointer;
+}
+
+#message{
+    float: left;
+    margin: 0px 0;
+    font-size: 12px;
+    font-weight: bold;
+    padding-right: 8px;
+    padding: 0;
+}
+
+a, a:visited {
+    color: #7B838A;
+}
+a:hover {
+    color: #259DFF;
+}
+
+a > img {
+    margin-right: 4px;
+}
