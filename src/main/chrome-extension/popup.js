@@ -5,7 +5,7 @@
         count = 0,
         links = document.getElementById("links"),
         addBtn = document.getElementById("addBtn"),
-        msg = document.getElementById("message");;
+        msg = document.getElementById("message");
 
     var doXhr = function(method, path, auth, data, callback) {
         var req = new window.XMLHttpRequest();
@@ -21,7 +21,11 @@
         }
         req.onreadystatechange = function() {
             if (req.readyState == 4 && req.status >= 200 && req.status < 300) {
-                callback(null, JSON.parse(req.responseText));
+                if (req.responseText.length > 0) {
+                    callback(null, JSON.parse(req.responseText));
+                }else {
+                    callback(null, null);
+                }
             } else if (req.readyState == 4) {
                 callback(req.response);
             }
@@ -48,14 +52,24 @@
                 callback(data);
             }
         });
-    }
+    };
+
+    var getBottles = function(callback) {
+        console.log("get all bottles");
+        doXhr("GET", "/bottles", true, null, callback);
+    };
+
+    var removeBottle = function(id, callback) {
+        console.log("remove bottle", id);
+        doXhr("DELETE", "/bottles/" + id, true, null, callback);
+    };
 
     var message = function(messageStr) {
         msg.innerText = messageStr;
         setTimeout(function() {
-            msg.innerText = "Total Links:"+count;
+            msg.innerText = "Total Links: "+count;
         }, 1000);
-    }
+    };
 
     var badgeText = function(c){
         if(c > 999){
@@ -73,10 +87,28 @@
     };
 
     var createLinkHtml = function(bottle) {
-         var linkBtn = document.createElement("span");
+         var linkBtn = document.createElement("span"),
+            title = bottle.title;
+
+         if (title.length > 50) {
+            title = title.substr(0, 50) + "...";
+         }
+
          linkBtn.setAttribute("class", "removeBtn");
          linkBtn.setAttribute("id", bottle.id);
-         return linkBtn.outerHTML+"<a target='_blank' href='"+bottle.url+"'>" + getIcon(bottle.url) + " " + bottle.title +"</a>";
+         return linkBtn.outerHTML+"<a target='_blank' href='"+bottle.url+"'>" + getIcon(bottle.url)  + title +"</a>";
+    };
+
+    var removeBottleLink = function(e) {
+        if(e.target.parentNode.parentNode){
+            removeBottle(e.target.getAttribute("id"), function(err, bottle) {
+                console.log("removed bottle", bottle, "update bottle list");
+                message("Removed Link");
+                count--;
+                chrome.browserAction.setBadgeText({"text": badgeText(count)});
+                e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+            });
+        }
     };
 
     var listBottles = function(err, bottles) {
@@ -84,21 +116,22 @@
             count = 0;
             return;
         }
+        bottles.sort(function(a, b){
+            if(a.datetime_added < b.datetime_added) return -1;
+            if(a.datetime_added > b.datetime_added) return 1;
+            return 0;
+        });
         count = bottles.length;
         for (var i = 0; i < count; i++) {
             var list = document.createElement("li");
             list.innerHTML= createLinkHtml(bottles[i]);
             links.appendChild(list);
+            list.getElementsByClassName("removeBtn")[0].addEventListener("click", removeBottleLink, false);
         }
         chrome.browserAction.setBadgeText({"text": badgeText(count)});
         console.log("finish list bottles", count);
+        message("Finished!");
     };
-
-    var getBottles = function(callback) {
-        callback(null, []);
-    };
-
-
 
     chrome.storage.sync.get("bottle-cfg", function(cfg) {
         config = cfg;
@@ -128,6 +161,7 @@
                 var list = document.createElement("li");
                 list.innerHTML = createLinkHtml(bottle);
                 links.appendChild(list);
+                list.getElementsByClassName("removeBtn")[0].addEventListener("click", removeBottleLink, false);
                 message("Saved!");
                 count++;
                 chrome.browserAction.setBadgeText({"text": badgeText(count)});
