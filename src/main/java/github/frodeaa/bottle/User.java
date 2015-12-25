@@ -73,14 +73,20 @@ public class User {
         }
         User user = new User();
         user.external_id = UUID.randomUUID();
-        user.password = BCrypt.hashpw(String.format("%s:%s", user.external_id, values.get("password").asString()),
-                BCrypt.gensalt(12));
+        user.password = user.hash(values.get("password").asString());
         return user;
     }
 
+    private String salt(String password) {
+        return String.format("%s:%s", this.external_id, password);
+    }
+
+    private String hash(String password) {
+        return BCrypt.hashpw(salt(password), BCrypt.gensalt(12));
+    }
+
     public boolean checkPassword(String password) {
-        return BCrypt.checkpw(
-                String.format("%s:%s", getExternal_id(), password), getPassword());
+        return BCrypt.checkpw(salt(password), getPassword());
     }
 
     public static List<User> byId(UUID externalId, Db db) {
