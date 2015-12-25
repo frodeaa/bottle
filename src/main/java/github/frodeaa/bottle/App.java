@@ -1,6 +1,7 @@
 package github.frodeaa.bottle;
 
 import blade.kit.json.JSONKit;
+import blade.kit.json.ParseException;
 import com.blade.Blade;
 import com.blade.plugin.Plugin;
 import github.frodeaa.blade.flywaydb.FlywaydbPlugin;
@@ -25,67 +26,111 @@ public class App {
         blade.before("/bottles.*", new AuthHandler());
 
         blade.post("/users", (request, response) -> {
-            User user = User.fromRequest(request.body().asString());
-            user.insertWith(blade.plugin(Db.class));
-            response.status(201).json(user.toJson().toString());
+            try {
+                User user = User.fromRequest(request.body().asString());
+                user.insertWith(blade.plugin(Db.class));
+                response.status(201).json(user.toJson().toString());
+            } catch (ParseException | IllegalArgumentException e) {
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+            } catch (Exception e) {
+                response.status(500);
+            }
         });
 
-        blade.post("/bottles", (req, resp) -> {
-            resp.status(201).json(Bottle.from(req.attribute("user"),
-                    req.body().asString()).insertWith(blade.plugin(Db.class)).toJson().toString());
+        blade.post("/bottles", (request, response) -> {
+            try {
+                response.status(201).json(Bottle.from(request.attribute("user"),
+                        request.body().asString()).insertWith(blade.plugin(Db.class)).toJson().toString());
+            } catch (ParseException | IllegalArgumentException e) {
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+            } catch (Exception e) {
+                response.status(500);
+            }
         });
 
-        blade.get("/bottles/:id", (req, resp) -> {
+        blade.get("/bottles/:id", (request, response) -> {
             UUID externalId;
             try {
-                externalId = UUID.fromString(req.param("id"));
+                externalId = UUID.fromString(request.param("id"));
             } catch (IllegalArgumentException e) {
-                resp.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
                 return;
             }
+            try {
+                Collection<Bottle> bottles = Bottle.byId(request.attribute("user"), externalId, blade.plugin(Db.class));
+                if (bottles.isEmpty()) {
+                    response.notFound();
+                } else {
+                    response.json(Bottle.asJson(bottles));
+                }
 
-            Collection<Bottle> bottles = Bottle.byId(req.attribute("user"), externalId, blade.plugin(Db.class));
-            if (bottles.isEmpty()) {
-                resp.notFound();
-            } else {
-                resp.json(Bottle.asJson(bottles));
+            } catch (ParseException | IllegalArgumentException e) {
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+            } catch (Exception e) {
+                response.status(500);
             }
         });
 
         blade.delete("/bottles", (request, response) -> {
-            Collection<Bottle> removedBottles = Bottle.deleteAll(request.attribute("user"), blade.plugin(Db.class));
-            if (removedBottles.isEmpty()) {
-                response.status(204);
-            } else {
-                response.status(200).json(Bottle.asJson(removedBottles).toString());
+            try {
+                Collection<Bottle> removedBottles = Bottle.deleteAll(request.attribute("user"), blade.plugin(Db.class));
+                if (removedBottles.isEmpty()) {
+                    response.status(204);
+                } else {
+                    response.status(200).json(Bottle.asJson(removedBottles).toString());
+                }
+            } catch (ParseException | IllegalArgumentException e) {
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+            } catch (Exception e) {
+                response.status(500);
             }
         });
 
-        blade.delete("/bottles/:id", (req, resp) -> {
+        blade.delete("/bottles/:id", (request, response) -> {
             UUID externalId;
             try {
-                externalId = UUID.fromString(req.param("id"));
+                externalId = UUID.fromString(request.param("id"));
             } catch (IllegalArgumentException e) {
-                resp.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
                 return;
             }
-            Collection<Bottle> removedBottles = Bottle.deleteById(req.attribute("user"),
-                    externalId, blade.plugin(Db.class));
 
-            if (removedBottles.isEmpty()) {
-                resp.notFound();
-            } else {
-                resp.status(200).json(Bottle.asJson(removedBottles).toString());
+            try {
+                Collection<Bottle> removedBottles = Bottle.deleteById(request.attribute("user"),
+                        externalId, blade.plugin(Db.class));
+
+                if (removedBottles.isEmpty()) {
+                    response.notFound();
+                } else {
+                    response.status(200).json(Bottle.asJson(removedBottles).toString());
+                }
+
+            } catch (ParseException | IllegalArgumentException e) {
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+            } catch (Exception e) {
+                response.status(500);
             }
         });
 
-        blade.get("/bottles", (req, resp) -> {
-            resp.json(Bottle.asJson(Bottle.list(req.attribute("user"), blade.plugin(Db.class))));
+        blade.get("/bottles", (request, response) -> {
+            try {
+                response.json(Bottle.asJson(Bottle.list(request.attribute("user"), blade.plugin(Db.class))));
+            } catch (ParseException | IllegalArgumentException e) {
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+            } catch (Exception e) {
+                response.status(500);
+            }
         });
 
-        blade.get("/health", (req, resp) -> {
-            int status = ((Db) blade.plugin(Db.class)).healthCheck(200);
-            resp.status(status).json(JSONKit.toJSONString(singletonMap("status", status)));
+        blade.get("/health", (request, response) -> {
+            try {
+                int status = ((Db) blade.plugin(Db.class)).healthCheck(200);
+                response.status(status).json(JSONKit.toJSONString(singletonMap("status", status)));
+            } catch (ParseException | IllegalArgumentException e) {
+                response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
+            } catch (Exception e) {
+                response.status(500);
+            }
         });
 
         ((Plugin) blade.plugin(FlywaydbPlugin.class)).run();
