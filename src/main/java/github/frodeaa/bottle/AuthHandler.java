@@ -52,12 +52,10 @@ public class AuthHandler implements RouteHandler {
             }
             LOGGER.info("authentication failed " + ip);
             response.header("Access-Control-Allow-Origin", "*");
-            response.status(403);
-            response.json(JSONKit.toJSONString(singletonMap("status_code", 403)));
+            response.status(403).json(JSONKit.toJSONString(singletonMap("status_code", 403)));
         } else {
-            response.status(401);
             response.header("WWW-Authenticate", "Basic realm=Bottle API");
-            response.json(JSONKit.toJSONString(singletonMap("status_code", 401)));
+            response.status(401).json(JSONKit.toJSONString(singletonMap("status_code", 401)));
         }
     }
 
