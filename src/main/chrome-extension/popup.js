@@ -5,6 +5,7 @@
         count = 0,
         links = document.getElementById("links"),
         addBtn = document.getElementById("addBtn"),
+        clearBtn = document.getElementById("clearBtn"),
         msg = document.getElementById("message");
 
     var doXhr = function(method, path, auth, data, callback) {
@@ -90,8 +91,8 @@
          var linkBtn = document.createElement("span"),
             title = bottle.title;
 
-         if (title.length > 50) {
-            title = title.substr(0, 50) + "...";
+         if (title.length > 45) {
+            title = title.substr(0, 45) + "...";
          }
 
          linkBtn.setAttribute("class", "removeBtn");
@@ -168,4 +169,18 @@
             });
         });
     });
+
+    clearBtn.addEventListener("click", function(){
+        if(confirm("Are you sure you want to delete all links ?")){
+            removeBottle("", function(err, bottle) {
+                console.log("removed all bottles", bottle, "update bottle list");
+                message("Removed Link");
+                count = 0;
+                chrome.browserAction.setBadgeText({"text": badgeText(count)});
+                links.innerHTML = "";
+                message("Cleared!");
+            });
+        }
+    });
+
 })();
