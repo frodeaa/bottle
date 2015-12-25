@@ -1,6 +1,16 @@
 apply plugin: 'java'
 apply plugin: 'application'
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "com.eriwen:gradle-js-plugin:1.12.1"
+    }
+}
+
+apply plugin: "com.eriwen.gradle.js"
 
 mainClassName = 'github.frodeaa.bottle.App'
 
@@ -23,4 +33,31 @@ dependencies {
     compile 'org.postgresql:postgresql:9.4-1206-jdbc42'
     compile 'org.flywaydb:flyway-core:3.2.1'
     compile 'de.svenkubiak:jBCrypt:0.4'
+}
+
+javascript.source {
+    dev {
+        js {
+            srcDir file("${projectDir}/src/main/chrome-extension")
+            include "*.js"
+            exclude "lib/*.js"
+        }
+    }
+}
+
+jshint {
+    tasks.jshint.source = javascript.source.dev.js.files
+    tasks.jshint.dest = file("${buildDir}/jshint.out")
+    tasks.jshint.outputToStdOut = false
+    tasks.jshint.reporter = 'checkstyle'
+    jshint.options = [
+            expr: "true",
+            unused: "true",
+            browser: "true",
+            devel: "true"
+    ]
+    jshint.predef = [
+            "chrome": false
+    ]
+
 }
