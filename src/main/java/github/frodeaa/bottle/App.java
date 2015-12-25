@@ -31,8 +31,8 @@ public class App {
         });
 
         blade.post("/bottles", (req, resp) -> {
-            Bottle.from(req.attribute("user"), req.body().asString()).insertWith(blade.plugin(Db.class));
-            resp.status(201);
+            resp.status(201).json(Bottle.from(req.attribute("user"),
+                    req.body().asString()).insertWith(blade.plugin(Db.class)).toJson().toString());
         });
 
         blade.get("/bottles/:id", (req, resp) -> {
