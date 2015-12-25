@@ -81,11 +81,12 @@ public class Bottle {
         this.user_id = bottle.user_id;
     }
 
-    public void insertWith(Db db) {
+    public Bottle insertWith(Db db) {
         try (Connection con = db.open()) {
-            updateWith(con.createQuery("insert into bottles(title, url, user_id) values(:title, :url, :user_id) returning id")
+            updateWith(con.createQuery("insert into bottles(title, url, user_id) values(:title, :url, :user_id) returning *")
                     .bind(this).executeAndFetch(Bottle.class).get(0));
         }
+        return this;
     }
 
     public static boolean deleteById(User user, UUID externalId, Db db) {
