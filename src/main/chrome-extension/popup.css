@@ -11,7 +11,7 @@ body {
     display: block;
 }
 #header span {
-    color: #AAA;
+    color: #555;
     font-size: 16px;
     vertical-align: middle;
     padding: 0;
@@ -25,26 +25,35 @@ body {
     -webkit-box-sizing: border-box;
     font-size: 12px;
     word-wrap: break-word;
-    padding: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
     float: left;
     clear: left;
 }
 
-#links{
+#links {
     list-style: none;
-    padding: 0;
-    margin: 0;
+    padding: 0px;
+    margin-top: 0;
+    margin-bottom: 0;
+    margin-left: -15px;
+    margin-right: -15px;
+    margin-bottom: 5px;
     float: left;
     display: block;
 }
+
+#links li:hover {
+    background-color: #bbceec;
+}
+
 #links li {
     width: 100%;
     -webkit-box-sizing: border-box;
     display: block;
     float: left;
-    margin-top: 4px;
-    margin-bottom: 4px;
 }
+
 .removeBtn:before{
         content:'x';
 }
@@ -54,10 +63,11 @@ body {
     float: right;
     background-color: #BA0713;
     color: #FFF;
-    margin-right: 0px;
+    margin-right: 10px;
     font-weight: bolder;
     padding: 0;
     border-radius: 10px;
+    margin-top: 6px;
     text-align: center;
     content: '&#215;';
     cursor: pointer;
@@ -86,14 +96,7 @@ body {
     cursor: pointer;
 }
 
-#message{
-    float: left;
-    margin: 0px 0;
-    font-size: 12px;
-    font-weight: bold;
-    padding-right: 8px;
-    padding: 0;
-}
+
 
 a, a:visited {
     color: #7B838A;
@@ -102,6 +105,27 @@ a:hover {
     color: #259DFF;
 }
 
-a > img {
+a > div {
+    padding: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+a > div > img {
     margin-right: 4px;
+}
+
+.menuseparator {
+    border-top: 1px solid #ebebeb;
+    margin-bottom: 5px;
+    margin-top: 5px;
+}
+
+#message{
+    float: right;
+    margin: 0px 0;
+    font-size: 9px;
+    font-weight: bold;
+    padding-right: 18px;
+    padding-top: 3px;
 }

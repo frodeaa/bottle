@@ -96,7 +96,7 @@
 
          linkBtn.setAttribute("class", "removeBtn");
          linkBtn.setAttribute("id", bottle.id);
-         return linkBtn.outerHTML+"<a target='_blank' href='"+bottle.url+"'>" + getIcon(bottle.url)  + title +"</a>";
+         return linkBtn.outerHTML+"<a target='_blank' href='"+bottle.url+"'><div>" + getIcon(bottle.url)  + title +"</div></a>";
     };
 
     var removeBottleLink = function(e) {
