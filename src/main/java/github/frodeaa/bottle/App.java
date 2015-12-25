@@ -69,10 +69,13 @@ public class App {
                 resp.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
                 return;
             }
-            if (Bottle.deleteById(req.attribute("user"), externalId, blade.plugin(Db.class))) {
-                resp.status(204);
-            } else {
+            Collection<Bottle> removedBottles = Bottle.deleteById(req.attribute("user"),
+                    externalId, blade.plugin(Db.class));
+
+            if (removedBottles.isEmpty()) {
                 resp.notFound();
+            } else {
+                resp.status(200).json(Bottle.asJson(removedBottles).toString());
             }
         });
 

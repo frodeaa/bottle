@@ -89,12 +89,12 @@ public class Bottle {
         return this;
     }
 
-    public static boolean deleteById(User user, UUID externalId, Db db) {
+    public static List<Bottle> deleteById(User user, UUID externalId, Db db) {
         try (Connection con = db.open()) {
-            return !con.createQuery("update bottles set datetime_removed = now() " +
+            return con.createQuery("update bottles set datetime_removed = now() " +
                     "where external_id = :external_id and datetime_removed is null and user_id = :user_id returning *")
                     .addParameter("external_id", externalId)
-                    .addParameter("user_id", user.getId()).executeAndFetch(Bottle.class).isEmpty();
+                    .addParameter("user_id", user.getId()).executeAndFetch(Bottle.class);
         }
     }
 
