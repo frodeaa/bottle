@@ -13,6 +13,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.UUID;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonMap;
 
 
@@ -128,9 +129,8 @@ public class App {
             }
         });
 
-        ((Plugin) blade.plugin(FlywaydbPlugin.class)).run();
-        ((Plugin) blade.plugin(Sql2oPlugin.class)).run();
-        ((Plugin) blade.plugin(PerfPlugin.class)).run();
+        asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class)
+                .stream().forEach(p -> ((Plugin) blade.plugin(p)).run());
 
         blade.start();
     }
