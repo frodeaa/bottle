@@ -1,9 +1,11 @@
 package github.frodeaa.bottle;
 
+import blade.kit.http.HttpRequestException;
 import blade.kit.json.JSONKit;
 import blade.kit.log.Logger;
 import com.blade.Blade;
 import com.blade.route.RouteHandler;
+import com.blade.web.http.HttpException;
 import com.blade.web.http.Request;
 import com.blade.web.http.Response;
 import github.frodeaa.blade.sql2o.Db;
@@ -55,9 +57,11 @@ public class AuthHandler implements RouteHandler {
                     request.method(), request.path(), "", ip));
             response.header("Access-Control-Allow-Origin", "*");
             response.status(403).json(JSONKit.toJSONString(singletonMap("status_code", 403)));
+            request.abort();
         } else {
             response.header("WWW-Authenticate", "Basic realm=Bottle API");
             response.status(401).json(JSONKit.toJSONString(singletonMap("status_code", 401))).raw();
+            request.abort();
         }
     }
 
