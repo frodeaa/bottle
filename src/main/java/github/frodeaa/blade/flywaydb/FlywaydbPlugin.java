@@ -1,6 +1,7 @@
 package github.frodeaa.blade.flywaydb;
 
-import blade.kit.log.Logger;
+import blade.kit.logging.Logger;
+import blade.kit.logging.LoggerFactory;
 import com.blade.plugin.Plugin;
 import github.frodeaa.blade.DbUrl;
 import org.flywaydb.core.Flyway;
@@ -9,7 +10,7 @@ import java.net.URISyntaxException;
 
 public class FlywaydbPlugin implements Plugin {
 
-    private static Logger LOGGER = Logger.getLogger(FlywaydbPlugin.class);
+    private static Logger LOGGER = LoggerFactory.getLogger(FlywaydbPlugin.class);
 
     @Override
     public void run() {

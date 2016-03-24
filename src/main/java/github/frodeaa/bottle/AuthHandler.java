@@ -1,11 +1,10 @@
 package github.frodeaa.bottle;
 
-import blade.kit.http.HttpRequestException;
 import blade.kit.json.JSONKit;
-import blade.kit.log.Logger;
+import blade.kit.logging.Logger;
+import blade.kit.logging.LoggerFactory;
 import com.blade.Blade;
 import com.blade.route.RouteHandler;
-import com.blade.web.http.HttpException;
 import com.blade.web.http.Request;
 import com.blade.web.http.Response;
 import github.frodeaa.blade.sql2o.Db;
@@ -18,7 +17,7 @@ import static java.util.Collections.singletonMap;
 
 public class AuthHandler implements RouteHandler {
 
-    private Logger LOGGER = Logger.getLogger(AuthHandler.class);
+    private Logger LOGGER = LoggerFactory.getLogger(AuthHandler.class);
 
     private String ip(Request requeset) {
         String forwardedFor = requeset.header("X-Forwarded-For");
@@ -41,20 +40,20 @@ public class AuthHandler implements RouteHandler {
                 List<User> users;
                 try {
                     UUID userId = UUID.fromString(userPass[0]);
-                    users = User.byId(userId, Blade.me().plugin(Db.class));
+                    users = User.byId(userId, (Db) Blade.me().plugin(Db.class));
                 } catch (IllegalArgumentException e) {
                     response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
                     return;
                 }
                 if (users.size() == 1 && users.get(0).checkPassword(userPass[1])) {
                     LOGGER.info(String.format("Request : %s\t%s\tauthenticated %s\t%s",
-                            request.method(), request.path(), users.get(0).getExternal_id(), ip));
+                            request.method(), request.pathInfo(), users.get(0).getExternal_id(), ip));
                     request.attribute("user", users.get(0));
                     return;
                 }
             }
             LOGGER.info(String.format("Request : %s\t%s\tauthenticated failed %s\t%s",
-                    request.method(), request.path(), "", ip));
+                    request.method(), request.pathInfo(), "", ip));
             response.header("Access-Control-Allow-Origin", "*");
             response.status(403).json(JSONKit.toJSONString(singletonMap("status_code", 403)));
             request.abort();

@@ -1,13 +1,14 @@
 package github.frodeaa.blade.perf;
 
-import blade.kit.log.Logger;
+import blade.kit.logging.Logger;
+import blade.kit.logging.LoggerFactory;
 import com.blade.Blade;
 import com.blade.plugin.Plugin;
 
 public class PerfPlugin implements Plugin {
 
     public static final String START_TIME = "start_time";
-    private Logger LOGGER = Logger.getLogger(PerfPlugin.class);
+    private Logger LOGGER = LoggerFactory.getLogger(PerfPlugin.class);
 
 
     @Override
@@ -23,7 +24,7 @@ public class PerfPlugin implements Plugin {
             long duration = System.currentTimeMillis() - startTime;
             LOGGER.info(
                     String.format("Request : %s\t%s\t%s %sms",
-                            request.method(), request.path(), response.status(), duration));
+                            request.method(), request.pathInfo(), response.status(), duration));
         });
 
     }

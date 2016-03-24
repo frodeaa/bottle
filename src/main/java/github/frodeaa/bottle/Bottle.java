@@ -1,9 +1,9 @@
 package github.frodeaa.bottle;
 
 import blade.kit.json.JSONKit;
-import blade.kit.json.JsonArray;
-import blade.kit.json.JsonObject;
-import blade.kit.json.JsonValue;
+import blade.kit.json.JSONArray;
+import blade.kit.json.JSONObject;
+import blade.kit.json.JSONValue;
 import github.frodeaa.blade.sql2o.Db;
 import org.sql2o.Connection;
 
@@ -47,17 +47,17 @@ public class Bottle {
         return user_id;
     }
 
-    public JsonObject toJson() {
-        JsonObject o = new JsonObject();
-        o.add("id", getExternal_id().toString());
-        o.add("title", getTitle());
-        o.add("url", getUrl());
-        o.add("datetime_added", getDatetime_added().toLocalDateTime().toString());
+    public JSONObject toJson() {
+        JSONObject o = new JSONObject();
+        o.put("id", getExternal_id().toString());
+        o.put("title", getTitle());
+        o.put("url", getUrl());
+        o.put("datetime_added", getDatetime_added().toLocalDateTime().toString());
         return o;
     }
 
     public static Bottle from(User user, String json) {
-        Map<String, JsonValue> values = JSONKit.toMap(json);
+        Map<String, JSONValue> values = JSONKit.toMap(json);
         for (String required : Arrays.asList("title", "url")) {
             if (!values.containsKey(required) || values.get(required) == null || values.get(required).asString().equals("")) {
                 throw new IllegalArgumentException("missing required value for " + required);
@@ -125,7 +125,7 @@ public class Bottle {
     }
 
     public static String asJson(Collection<Bottle> bottles) {
-        JsonArray array = new JsonArray();
+        JSONArray array = new JSONArray();
         for (Bottle bottle : bottles) {
             array.add(bottle.toJson());
         }

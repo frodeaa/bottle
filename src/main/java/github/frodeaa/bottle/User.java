@@ -1,8 +1,8 @@
 package github.frodeaa.bottle;
 
 import blade.kit.json.JSONKit;
-import blade.kit.json.JsonObject;
-import blade.kit.json.JsonValue;
+import blade.kit.json.JSONObject;
+import blade.kit.json.JSONValue;
 import github.frodeaa.blade.sql2o.Db;
 import org.mindrot.jbcrypt.BCrypt;
 import org.sql2o.Connection;
@@ -41,10 +41,10 @@ public class User {
         return datetime_disabled;
     }
 
-    public JsonObject toJson() {
-        JsonObject o = new JsonObject();
-        o.add("id", getExternal_id().toString());
-        o.add("datetime_added", getDatetime_added().toLocalDateTime().toString());
+    public JSONObject toJson() {
+        JSONObject o = new JSONObject();
+        o.put("id", getExternal_id().toString());
+        o.put("datetime_added", getDatetime_added().toLocalDateTime().toString());
         return o;
     }
 
@@ -65,7 +65,7 @@ public class User {
     }
 
     public static User fromRequest(String json) {
-        Map<String, JsonValue> values = JSONKit.toMap(json);
+        Map<String, JSONValue> values = JSONKit.toMap(json);
         for (String required : Arrays.asList("password")) {
             if (!values.containsKey(required) || values.get(required) == null || values.get(required).asString().equals("")) {
                 throw new IllegalArgumentException("missing required value for " + required);

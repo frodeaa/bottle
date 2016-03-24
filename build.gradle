@@ -29,8 +29,9 @@ jar {
 }
 
 dependencies {
-    compile 'com.bladejava:blade-core:1.5.1'
+    compile 'com.bladejava:blade-core:1.6.1M1'
     compile 'com.bladejava:blade-startup:1.0.1'
+    compile 'com.bladejava:blade-kit:1.2.9'
     compile 'org.sql2o:sql2o:1.5.4'
     compile 'org.postgresql:postgresql:9.4-1206-jdbc42'
     compile 'org.flywaydb:flyway-core:3.2.1'

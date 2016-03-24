@@ -30,7 +30,7 @@ public class App {
         blade.post("/users", (request, response) -> {
             try {
                 User user = User.fromRequest(request.body().asString());
-                user.insertWith(blade.plugin(Db.class));
+                user.insertWith((Db) blade.plugin(Db.class));
                 response.status(201).json(user.toJson().toString());
             } catch (ParseException | IllegalArgumentException e) {
                 response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
@@ -42,7 +42,7 @@ public class App {
         blade.post("/bottles", (request, response) -> {
             try {
                 response.status(201).json(Bottle.from(request.attribute("user"),
-                        request.body().asString()).insertWith(blade.plugin(Db.class)).toJson().toString());
+                        request.body().asString()).insertWith((Db) blade.plugin(Db.class)).toJson().toString());
             } catch (ParseException | IllegalArgumentException e) {
                 response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
             } catch (Exception e) {
@@ -53,7 +53,8 @@ public class App {
         blade.get("/bottles/:id", (request, response) -> {
             try {
                 UUID externalId = UUID.fromString(request.param("id"));
-                Collection<Bottle> bottles = Bottle.byId(request.attribute("user"), externalId, blade.plugin(Db.class));
+                User user = request.attribute("user");
+                Collection<Bottle> bottles = Bottle.byId(user, externalId, (Db) blade.plugin(Db.class));
                 if (bottles.isEmpty()) {
                     response.notFound();
                 } else {
@@ -69,7 +70,8 @@ public class App {
 
         blade.delete("/bottles", (request, response) -> {
             try {
-                Collection<Bottle> removedBottles = Bottle.deleteAll(request.attribute("user"), blade.plugin(Db.class));
+                User user = request.attribute("user");
+                Collection<Bottle> removedBottles = Bottle.deleteAll(user, (Db) blade.plugin(Db.class));
                 if (removedBottles.isEmpty()) {
                     response.status(204);
                 } else {
@@ -92,8 +94,9 @@ public class App {
             }
 
             try {
-                Collection<Bottle> removedBottles = Bottle.deleteById(request.attribute("user"),
-                        externalId, blade.plugin(Db.class));
+                User user = request.attribute("user");
+                Collection<Bottle> removedBottles = Bottle.deleteById(user,
+                        externalId, (Db) blade.plugin(Db.class));
 
                 if (removedBottles.isEmpty()) {
                     response.notFound();
@@ -110,7 +113,8 @@ public class App {
 
         blade.get("/bottles", (request, response) -> {
             try {
-                response.json(Bottle.asJson(Bottle.list(request.attribute("user"), blade.plugin(Db.class))));
+                User user = request.attribute("user");
+                response.json(Bottle.asJson(Bottle.list(user, (Db)blade.plugin(Db.class))));
             } catch (ParseException | IllegalArgumentException e) {
                 response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
             } catch (Exception e) {
@@ -129,9 +133,16 @@ public class App {
             }
         });
 
-        asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class)
-                .stream().forEach(p -> ((Plugin) blade.plugin(p)).run());
+        for (Class<? extends Plugin> p :  asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class)) {
+            blade.plugin(p);
+        }
 
-        blade.start();
+        //asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class)
+        //        .stream().forEach(p -> ((Plugin) blade.plugin(p)).run());
+        try {
+            blade.createServer(6000).start("/");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
