@@ -73,7 +73,7 @@ jshint {
 task bottleDocker(type: Docker, dependsOn: installDist) {
     applicationName = jar.baseName
     tagVersion = jar.version
-    defaultCommand(['-cp', '/lib/*', mainClassName])
+    defaultCommand(['-cp', "lib/${applicationName}-${tagVersion}.jar:/lib/*", mainClassName])
     entryPoint(['java'])
     exposePort(9000)
     addFile {

@@ -2,8 +2,8 @@ package github.frodeaa.bottle;
 
 import blade.kit.json.JSONKit;
 import blade.kit.json.ParseException;
+import blade.kit.logging.LoggerFactory;
 import com.blade.Blade;
-import com.blade.plugin.Plugin;
 import github.frodeaa.blade.flywaydb.FlywaydbPlugin;
 import github.frodeaa.blade.perf.PerfPlugin;
 import github.frodeaa.blade.sql2o.Db;
@@ -19,6 +19,10 @@ import static java.util.Collections.singletonMap;
 
 public class App {
 
+    private static Db db(Blade blade) {
+        return blade.ioc().getBean(Sql2oPlugin.class);
+    }
+
     public static void main(String[] args) throws URISyntaxException {
 
         System.setProperty("DATABASE_URL", new EnvConfig().databaseUrl());
@@ -30,7 +34,7 @@ public class App {
         blade.post("/users", (request, response) -> {
             try {
                 User user = User.fromRequest(request.body().asString());
-                user.insertWith((Db) blade.plugin(Db.class));
+                user.insertWith(db(blade));
                 response.status(201).json(user.toJson().toString());
             } catch (ParseException | IllegalArgumentException e) {
                 response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
@@ -42,7 +46,7 @@ public class App {
         blade.post("/bottles", (request, response) -> {
             try {
                 response.status(201).json(Bottle.from(request.attribute("user"),
-                        request.body().asString()).insertWith((Db) blade.plugin(Db.class)).toJson().toString());
+                        request.body().asString()).insertWith(db(blade)).toJson().toString());
             } catch (ParseException | IllegalArgumentException e) {
                 response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
             } catch (Exception e) {
@@ -54,7 +58,7 @@ public class App {
             try {
                 UUID externalId = UUID.fromString(request.param("id"));
                 User user = request.attribute("user");
-                Collection<Bottle> bottles = Bottle.byId(user, externalId, (Db) blade.plugin(Db.class));
+                Collection<Bottle> bottles = Bottle.byId(user, externalId, db(blade));
                 if (bottles.isEmpty()) {
                     response.notFound();
                 } else {
@@ -71,7 +75,7 @@ public class App {
         blade.delete("/bottles", (request, response) -> {
             try {
                 User user = request.attribute("user");
-                Collection<Bottle> removedBottles = Bottle.deleteAll(user, (Db) blade.plugin(Db.class));
+                Collection<Bottle> removedBottles = Bottle.deleteAll(user, db(blade));
                 if (removedBottles.isEmpty()) {
                     response.status(204);
                 } else {
@@ -96,7 +100,7 @@ public class App {
             try {
                 User user = request.attribute("user");
                 Collection<Bottle> removedBottles = Bottle.deleteById(user,
-                        externalId, (Db) blade.plugin(Db.class));
+                        externalId, db(blade));
 
                 if (removedBottles.isEmpty()) {
                     response.notFound();
@@ -114,7 +118,7 @@ public class App {
         blade.get("/bottles", (request, response) -> {
             try {
                 User user = request.attribute("user");
-                response.json(Bottle.asJson(Bottle.list(user, (Db)blade.plugin(Db.class))));
+                response.json(Bottle.asJson(Bottle.list(user, db(blade))));
             } catch (ParseException | IllegalArgumentException e) {
                 response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
             } catch (Exception e) {
@@ -124,7 +128,7 @@ public class App {
 
         blade.get("/health", (request, response) -> {
             try {
-                int status = ((Db) blade.plugin(Db.class)).healthCheck(200);
+                int status = (db(blade)).healthCheck(200);
                 response.status(status).json(JSONKit.toJSONString(singletonMap("status", status)));
             } catch (ParseException | IllegalArgumentException e) {
                 response.status(400).json(JSONKit.toJSONString(singletonMap("message", e.getMessage())));
@@ -133,16 +137,15 @@ public class App {
             }
         });
 
-        for (Class<? extends Plugin> p :  asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class)) {
-            blade.plugin(p);
-        }
+        blade.get("/", (request, response) -> response.render("index"));
 
-        //asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class)
-        //        .stream().forEach(p -> ((Plugin) blade.plugin(p)).run());
+        asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class).forEach(p -> blade.plugin(p));
+
         try {
-            blade.createServer(6000).start("/");
+            blade.createServer(9000).start("/");
+            asList(FlywaydbPlugin.class, Sql2oPlugin.class, PerfPlugin.class).forEach(p -> blade.ioc().getBean(p).run());
         } catch (Exception e) {
-            e.printStackTrace();
+            LoggerFactory.getLogger(App.class).error("failed to start", e);
         }
     }
 }
